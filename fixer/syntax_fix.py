@@ -40,18 +40,37 @@ def quick_syntax_checks_and_fix(code, autofix=False):
     # 2) simple missing semicolon heuristic:
     lines = code.splitlines()
     new_lines = []
-    stmt_like = re.compile(r'^\s*([a-zA-Z_][a-zA-Z0-9_]*\s+)?[a-zA-Z_][a-zA-Z0-9_]*.*[^;{}\s]$')
+    stmt_like = re.compile(
+        r'^\s*([a-zA-Z_][a-zA-Z0-9_]*\s+)?[a-zA-Z_][a-zA-Z0-9_]*.*[^;{}\s]$'
+    )
+
     for i, ln in enumerate(lines, start=1):
         stripped = ln.strip()
-        if stripped == "" or stripped.startswith('#') or stripped.endswith('{') or stripped.endswith('}') or stripped.startswith('//') or stripped.startswith('/*'):
+
+        # Skip empty lines, preprocessor directives, braces, and comments
+        if (
+            stripped == ""
+            or stripped.startswith('#')
+            or stripped.endswith('{')
+            or stripped.endswith('}')
+            or stripped.startswith('//')
+            or stripped.startswith('/*')
+        ):
             new_lines.append(ln)
             continue
+
+        # ✅ Skip function definitions — detect `(...)` without ending `;`
+        if '(' in stripped and stripped.endswith(')') and '{' not in stripped:
+            new_lines.append(ln)
+            continue
+
         if stmt_like.match(ln):
             issues.append(f"Possible missing semicolon at line {i}: {ln.strip()}")
             if autofix:
                 new_lines.append(ln + ';')
                 issues.append(f"Auto-inserted ';' at line {i}")
                 continue
+
         new_lines.append(ln)
 
     fixed_code = "\n".join(new_lines)
