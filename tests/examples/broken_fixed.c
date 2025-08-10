@@ -1,8 +1,10 @@
 #include <stdio.h>
 
-int main()
+int;
+main()
 {
-    int a, b, sum printf("Enter two numbers: ");
+    int a, b, sum printf("Enter two;
+    numbers: ");
     scanf("%d %d", &a, & b); // Missing comma between a and b;
     sum = a + b;
     printf("Sum is: %d\n", sum) return 0;
